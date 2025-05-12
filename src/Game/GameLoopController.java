@@ -1,32 +1,33 @@
 package Game;
 
-import javax.swing.JFrame;
-import javax.swing.Timer;
+import javax.swing.*;
 
 public class GameLoopController {
 
-    private Game game;
-    private GameViewer viewer;
+	private Game game;
+	private GameViewer viewer;
 
-    public GameLoopController() {
-        game = new Game();
-        viewer = new GameViewer(game);
-    }
+	public GameLoopController() {
+		game = new Game();
+		viewer = new GameViewer(game);
+	}
 
-    public void start() {
-        JFrame frame = new JFrame("Infinite Road Drive");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.add(viewer);
-        frame.setSize(800, 800);
-        frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
+	public void start() {
+		JFrame frame = new JFrame("Infinite Road Drive");
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.add(viewer);
+		frame.setSize(800, 800);
+		frame.setResizable(false);
+		frame.setLocationRelativeTo(null);
+		frame.setVisible(true);
 
-        viewer.requestFocusInWindow();
+		viewer.setFocusable(true);
+		viewer.requestFocusInWindow();
 
-        Timer timer = new Timer(16, e -> {
-            game.update();
-            viewer.refresh();
-        });
-        timer.start();
-    }
+		Timer timer = new Timer(16, e -> {
+			game.update(viewer.isUpPressed(), viewer.isDownPressed(), viewer.isLeftPressed(), viewer.isRightPressed());
+			viewer.refresh();
+		});
+		timer.start();
+	}
 }
