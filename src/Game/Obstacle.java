@@ -24,8 +24,8 @@ public abstract class Obstacle {
 
 	public void draw(Graphics2D g) {
 		g.drawImage(image, x, y, width, height, null);
-	    g.setColor(Color.RED);
-	    g.drawRect(x, y, width, height);
+//	    g.setColor(Color.RED);
+//	    g.drawRect(x, y, width, height);
 	}
 
 	public Rectangle getBounds() {
