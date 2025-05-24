@@ -2,6 +2,8 @@ package Game;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import javax.sound.sampled.*;
+import java.net.URL;
 
 public class Game {
 
@@ -23,6 +25,11 @@ public class Game {
 	private int scoreTimer = 0;
 	private int highScore = 0;
 
+	private Clip bgClip;
+	private Clip crashClip;
+	private boolean crashPlayed = false;
+	private boolean musicStarted = false;
+
 	public Game() {
 		roadImage = SpriteLoader.load("src/images/road.png");
 		carImage = SpriteLoader.load("src/images/playerCar.png");
@@ -42,8 +49,13 @@ public class Game {
 	}
 
 	public void update(boolean up, boolean down, boolean left, boolean right) {
-		if (!gameStarted || gameOver)
-			return;
+		if (!gameStarted || gameOver) return;
+
+		if (!musicStarted) {
+			musicStarted = true;
+			crashPlayed = false;
+			playBackgroundMusic();
+		}
 
 		frameCount++;
 
@@ -67,9 +79,12 @@ public class Game {
 				if (score > highScore) {
 					highScore = score;
 				}
+				stopBackgroundMusic();
+				playCrashSound();
 				break;
 			}
 		}
+
 		scoreTimer++;
 		if (scoreTimer >= 60) {
 			score += 5;
@@ -85,6 +100,7 @@ public class Game {
 			g.drawImage(roadImage, 0, y, screenW, roadImage.getHeight(), null);
 			y += roadImage.getHeight();
 		}
+
 		g.setColor(Color.WHITE);
 		g.setFont(new Font("Arial", Font.PLAIN, 20));
 		g.drawString("Score:", 10, 30);
@@ -119,9 +135,7 @@ public class Game {
 			g.drawString("Final Score: " + score, screenW / 2 - 100, screenH / 2 + 20);
 			g.drawString(" High Score: " + highScore, screenW / 2 - 100, screenH / 2 + 60);
 			g.drawString("Press SPACE to Try Again", screenW / 2 - 140, screenH / 2 + 100);
-
 		}
-
 	}
 
 	public void startGame() {
@@ -144,6 +158,13 @@ public class Game {
 		gameStarted = true;
 		score = 0;
 		scoreTimer = 0;
+		crashPlayed = false;
+		musicStarted = false;
+
+		stopBackgroundMusic(); 
+		if (crashClip != null && crashClip.isRunning()) {
+			crashClip.stop();
+		}
 
 		int screenWidth = 800;
 		int screenHeight = 800;
@@ -158,4 +179,41 @@ public class Game {
 		obstacleManager = new ObstacleManager(boundsWidth);
 	}
 
+
+
+	private void playBackgroundMusic() {
+		try {
+			URL bgURL = getClass().getResource("/music/bg_music.wav");
+			AudioInputStream bgStream = AudioSystem.getAudioInputStream(bgURL);
+			bgClip = AudioSystem.getClip();
+			bgClip.open(bgStream);
+			bgClip.loop(Clip.LOOP_CONTINUOUSLY);
+		} catch (Exception e) {
+			System.err.println("Failed to play background music");
+			e.printStackTrace();
+		}
+	}
+
+	private void stopBackgroundMusic() {
+		if (bgClip != null && bgClip.isRunning()) {
+			bgClip.stop();
+			bgClip.close();
+		}
+	}
+
+	private void playCrashSound() {
+		if (crashPlayed) return;
+		crashPlayed = true;
+
+		try {
+			URL crashURL = getClass().getResource("/music/crash.wav");
+			AudioInputStream crashStream = AudioSystem.getAudioInputStream(crashURL);
+			crashClip = AudioSystem.getClip();
+			crashClip.open(crashStream);
+			crashClip.start();
+		} catch (Exception e) {
+			System.err.println("Failed to play crash sound");
+			e.printStackTrace();
+		}
+	}
 }
